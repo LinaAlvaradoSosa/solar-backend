@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env.js';
+import { calendarRouter } from './modules/calendar/calendar.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
 import { leadRouter } from './modules/leads/lead.routes.js';
 export const app = express();
@@ -19,3 +20,4 @@ app.get('/', (_request, response) => {
 });
 app.use('/api/health', healthRouter);
 app.use('/api/leads', leadRouter);
+app.use('/api/calendar', calendarRouter);

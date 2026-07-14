@@ -12,6 +12,15 @@ const envSchema = z.object({
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
     HOT_LEAD_EMAIL_TO: z.string().email(),
-    HOT_LEAD_EMAIL_FROM: z.string().email()
+    HOT_LEAD_EMAIL_FROM: z.string().email(),
+    CALENDAR_TRANSPORT: z.enum(['mock', 'google']).default('mock'),
+    CALENDAR_TIME_ZONE: z.string().default('America/Denver'),
+    CALENDAR_WORKDAY_START_HOUR: z.coerce.number().int().min(0).max(23).default(9),
+    CALENDAR_WORKDAY_END_HOUR: z.coerce.number().int().min(1).max(24).default(17),
+    CALENDAR_SLOT_DURATION_MINUTES: z.coerce.number().int().positive().default(15),
+    GOOGLE_CALENDAR_ID: z.string().optional(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_REFRESH_TOKEN: z.string().optional()
 });
 export const env = envSchema.parse(process.env);
