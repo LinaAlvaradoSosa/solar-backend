@@ -8,9 +8,13 @@ type HotLeadEmailInput = CreateLeadInput & {
   state?: string | null;
 };
 
+function buildPremiumLeadSubject(seriousness: number) {
+  return `SolarBuddy Premium Lead (${seriousness}/10)`;
+}
+
 function buildLeadEmailHtml(lead: HotLeadEmailInput) {
   return `
-    <h2>New Solar Buddy Hot Lead</h2>
+    <h2>New SolarBuddy Premium Lead</h2>
     <p><strong>Lead ID:</strong> ${lead.leadId}</p>
     <p><strong>Name:</strong> ${lead.fullName}</p>
     <p><strong>Email:</strong> ${lead.email}</p>
@@ -31,10 +35,10 @@ function buildLeadEmailHtml(lead: HotLeadEmailInput) {
 
 export async function sendHotLeadEmail(lead: HotLeadEmailInput) {
   if (env.EMAIL_TRANSPORT === 'console') {
-    console.log('Hot lead email payload', {
+    console.log('Premium lead email payload', {
       to: env.HOT_LEAD_EMAIL_TO,
       from: env.HOT_LEAD_EMAIL_FROM,
-      subject: `Hot lead ${lead.fullName} (${lead.seriousness}/10)`,
+      subject: buildPremiumLeadSubject(lead.seriousness),
       html: buildLeadEmailHtml(lead)
     });
     return;
@@ -55,7 +59,7 @@ export async function sendHotLeadEmail(lead: HotLeadEmailInput) {
   await transporter.sendMail({
     to: env.HOT_LEAD_EMAIL_TO,
     from: env.HOT_LEAD_EMAIL_FROM,
-    subject: `Hot lead ${lead.fullName} (${lead.seriousness}/10)`,
+    subject: buildPremiumLeadSubject(lead.seriousness),
     html: buildLeadEmailHtml(lead)
   });
 }

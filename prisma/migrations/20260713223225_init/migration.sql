@@ -3,7 +3,7 @@ CREATE TABLE "Lead" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "fullName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
+    "phone" TEXT,
     "propertyType" TEXT,
     "monthlyBill" TEXT,
     "addressRaw" TEXT NOT NULL,
