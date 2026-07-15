@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
+export const listBookingDaysSchema = z.object({});
+
 export const availabilitySchema = z.object({
-  range: z.enum(['Tomorrow', 'This Week', 'Next Week'])
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
 });
 
 export const bookAppointmentSchema = z.object({
@@ -17,3 +19,4 @@ export const bookAppointmentSchema = z.object({
 
 export type AvailabilityInput = z.infer<typeof availabilitySchema>;
 export type BookAppointmentInput = z.infer<typeof bookAppointmentSchema>;
+export type ListBookingDaysInput = z.infer<typeof listBookingDaysSchema>;

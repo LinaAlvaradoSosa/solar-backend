@@ -4,6 +4,9 @@ function buildPremiumLeadSubject(seriousness) {
     return `SolarBuddy Premium Lead (${seriousness}/10)`;
 }
 function buildLeadEmailHtml(lead) {
+    const houseSpecsHtml = lead.houseSpecs
+        ? `<p><strong>House Specs:</strong> ${lead.houseSpecs}</p>`
+        : '';
     return `
     <h2>New SolarBuddy Premium Lead</h2>
     <p><strong>Lead ID:</strong> ${lead.leadId}</p>
@@ -17,7 +20,7 @@ function buildLeadEmailHtml(lead) {
     <p><strong>Property Type:</strong> ${lead.propertyType ?? 'N/A'}</p>
     <p><strong>Monthly Bill:</strong> ${lead.monthlyBill ?? 'N/A'}</p>
     <p><strong>Service Type:</strong> ${lead.serviceType ?? 'N/A'}</p>
-    <p><strong>House Specs:</strong> ${lead.houseSpecs ?? 'N/A'}</p>
+    ${houseSpecsHtml}
     <p><strong>Seriousness:</strong> ${lead.seriousness}/10</p>
     <p><strong>Energy Provider:</strong> ${lead.energyProvider ?? 'N/A'}</p>
     <p><strong>Consent:</strong> ${lead.consentGiven ? 'Yes' : 'No'}</p>

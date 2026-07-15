@@ -1,6 +1,7 @@
 import { z } from 'zod';
+export const listBookingDaysSchema = z.object({});
 export const availabilitySchema = z.object({
-    range: z.enum(['Tomorrow', 'This Week', 'Next Week'])
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
 });
 export const bookAppointmentSchema = z.object({
     leadId: z.string().trim().min(1, 'Lead id is required'),

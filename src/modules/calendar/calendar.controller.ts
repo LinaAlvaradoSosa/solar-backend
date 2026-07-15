@@ -3,9 +3,14 @@ import { ZodError } from 'zod';
 import { AppError } from '../../lib/app-error.js';
 import {
   availabilitySchema,
-  bookAppointmentSchema
+  bookAppointmentSchema,
+  listBookingDaysSchema
 } from './calendar.schemas.js';
-import { bookAppointment, getAvailability } from './calendar.service.js';
+import {
+  bookAppointment,
+  getAvailability,
+  listBookingDays
+} from './calendar.service.js';
 
 function handleControllerError(error: unknown, response: Response, fallbackMessage: string) {
   if (error instanceof ZodError) {
@@ -41,6 +46,22 @@ export async function getAvailabilityHandler(request: Request, response: Respons
     });
   } catch (error) {
     handleControllerError(error, response, 'Failed to fetch availability');
+  }
+}
+
+export async function listBookingDaysHandler(request: Request, response: Response) {
+  try {
+    listBookingDaysSchema.parse(request.query);
+    const days = await listBookingDays();
+
+    response.json({
+      success: true,
+      data: {
+        days
+      }
+    });
+  } catch (error) {
+    handleControllerError(error, response, 'Failed to fetch booking days');
   }
 }
 

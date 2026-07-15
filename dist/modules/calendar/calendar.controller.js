@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 import { AppError } from '../../lib/app-error.js';
-import { availabilitySchema, bookAppointmentSchema } from './calendar.schemas.js';
-import { bookAppointment, getAvailability } from './calendar.service.js';
+import { availabilitySchema, bookAppointmentSchema, listBookingDaysSchema } from './calendar.schemas.js';
+import { bookAppointment, getAvailability, listBookingDays } from './calendar.service.js';
 function handleControllerError(error, response, fallbackMessage) {
     if (error instanceof ZodError) {
         response.status(400).json({
@@ -33,6 +33,21 @@ export async function getAvailabilityHandler(request, response) {
     }
     catch (error) {
         handleControllerError(error, response, 'Failed to fetch availability');
+    }
+}
+export async function listBookingDaysHandler(request, response) {
+    try {
+        listBookingDaysSchema.parse(request.query);
+        const days = await listBookingDays();
+        response.json({
+            success: true,
+            data: {
+                days
+            }
+        });
+    }
+    catch (error) {
+        handleControllerError(error, response, 'Failed to fetch booking days');
     }
 }
 export async function bookAppointmentHandler(request, response) {

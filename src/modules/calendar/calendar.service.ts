@@ -9,12 +9,14 @@ import {
 import {
   addLocalDays,
   formatInTimeZoneIso,
-  getLocalWeekday,
   getZonedDateTimeParts,
   isWeekday,
   zonedDateTimeToUtc
 } from '../../utils/timezone.js';
-import type { AvailabilityInput, BookAppointmentInput } from './calendar.schemas.js';
+import type {
+  AvailabilityInput,
+  BookAppointmentInput
+} from './calendar.schemas.js';
 
 type LocalDate = {
   year: number;
@@ -27,42 +29,48 @@ type TimeRange = {
   endAt: Date;
 };
 
-function buildDateRange(range: AvailabilityInput['range']) {
+type BookingDayOption = {
+  label: string;
+  date: string;
+};
+
+function formatDateKey(date: LocalDate) {
+  return `${String(date.year).padStart(4, '0')}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+}
+
+function formatBookingDayLabel(date: LocalDate, isToday: boolean) {
+  const utcDate = new Date(Date.UTC(date.year, date.month - 1, date.day));
+  const dateLabel = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC'
+  }).format(utcDate);
+
+  return isToday ? `Today (${dateLabel})` : dateLabel;
+}
+
+function listUpcomingWeekdays(count: number) {
   const nowParts = getZonedDateTimeParts(new Date(), env.CALENDAR_TIME_ZONE);
-  const today: LocalDate = {
+  let cursor: LocalDate = {
     year: nowParts.year,
     month: nowParts.month,
     day: nowParts.day
   };
-  const tomorrow = addLocalDays(today, 1);
+  const dates: LocalDate[] = [];
 
-  if (range === 'Tomorrow') {
-    return isWeekday(tomorrow) ? [tomorrow] : [];
-  }
-
-  if (range === 'This Week') {
-    const dates: LocalDate[] = [];
-    let cursor = tomorrow;
-
-    while (getLocalWeekday(cursor) !== 6 && getLocalWeekday(cursor) !== 0) {
-      if (isWeekday(cursor)) {
-        dates.push(cursor);
-      }
-      cursor = addLocalDays(cursor, 1);
+  while (dates.length < count) {
+    if (isWeekday(cursor)) {
+      dates.push(cursor);
     }
-
-    return dates;
+    cursor = addLocalDays(cursor, 1);
   }
 
-  const currentWeekday = getLocalWeekday(today);
-  const daysUntilNextMonday = ((8 - currentWeekday) % 7) || 7;
-  const nextMonday = addLocalDays(today, daysUntilNextMonday);
-
-  return Array.from({ length: 5 }, (_, index) => addLocalDays(nextMonday, index));
+  return dates;
 }
 
-function buildWorkingWindows(dates: LocalDate[]) {
-  return dates.map((date) => ({
+function buildWorkingWindow(date: LocalDate) {
+  return {
     startAt: zonedDateTimeToUtc(
       {
         ...date,
@@ -81,7 +89,21 @@ function buildWorkingWindows(dates: LocalDate[]) {
       },
       env.CALENDAR_TIME_ZONE
     )
-  }));
+  };
+}
+
+function parseDateKey(date: string): LocalDate {
+  const [year, month, day] = date.split('-').map((value) => Number.parseInt(value, 10));
+  return { year, month, day };
+}
+
+function isTodayDate(date: LocalDate) {
+  const nowParts = getZonedDateTimeParts(new Date(), env.CALENDAR_TIME_ZONE);
+  return (
+    date.year === nowParts.year &&
+    date.month === nowParts.month &&
+    date.day === nowParts.day
+  );
 }
 
 function intervalsOverlap(left: TimeRange, right: TimeRange) {
@@ -175,23 +197,26 @@ async function ensureSlotIsAvailable(startAt: Date, endAt: Date) {
 }
 
 export async function getAvailability(input: AvailabilityInput) {
-  const dates = buildDateRange(input.range);
-  if (dates.length === 0) {
-    return {
-      slots: []
-    };
+  const date = parseDateKey(input.date);
+  if (!isWeekday(date)) {
+    return { slots: [] };
   }
 
-  const windows = buildWorkingWindows(dates);
-  const range = {
-    startAt: windows[0].startAt,
-    endAt: windows[windows.length - 1].endAt
-  };
-  const busyIntervals = await listBusyIntervalsForRange(range);
+  const window = buildWorkingWindow(date);
+  const busyIntervals = await listBusyIntervalsForRange(window);
 
   return {
-    slots: windows.flatMap((window) => buildSlotsForWindow(window, busyIntervals))
+    slots: buildSlotsForWindow(window, busyIntervals)
   };
+}
+
+export async function listBookingDays() {
+  const days = listUpcomingWeekdays(3);
+
+  return days.map((date): BookingDayOption => ({
+    label: formatBookingDayLabel(date, isTodayDate(date)),
+    date: formatDateKey(date)
+  }));
 }
 
 export async function bookAppointment(input: BookAppointmentInput) {

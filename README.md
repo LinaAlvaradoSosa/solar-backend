@@ -36,7 +36,6 @@ Backend demo for Solar Buddy lead capture.
   "state": "CO",
   "zipCode": "81501",
   "serviceType": "Full Installation",
-  "houseSpecs": "1800 sqft, roof unknown",
   "seriousness": 8,
   "energyProvider": "Xcel Energy",
   "consentGiven": true,
