@@ -3,3 +3,4 @@ node_modules/
 dist/
 prisma/dev.db
 .DS_Store
+prisma/dev.db
